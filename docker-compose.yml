@@ -1,20 +1,26 @@
 services:
   mongo:
-    image: "mongo"
+    image: mongo
     ports:
       - "8080:27017"
     volumes:
       - ./mongo_data:/data/db
-  
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   backend:
     build: './backend'
     ports:
       - "5000:5000"
     depends_on:
-      - mongo
+      mongo:
+        condition: service_healthy
     env_file:
       - "./backend/.env.prod"
-  
+
   frontend:
     build: './frontend'
     ports:
