@@ -1,44 +1,34 @@
-// server/seedTasksData.js
 const mongoose = require('mongoose');
+require('dotenv').config();
 
-const MONGO_URL = process.env.MONGO_URI || 'mongodb://localhost:27017/todo-db';
+const Task = require('./models/Task'); 
 
-// Define minimal schema
-const taskSchema = new mongoose.Schema({
-    text: String,
-});
-
-const Task = mongoose.model('Task', taskSchema);
+const sampleTasks = [
+    {
+        title: 'Sample Task 1',
+        description: 'This is a sample task',
+        status: 'pending',
+    },
+    {
+        title: 'Sample Task 2',
+        description: 'Another sample task',
+        status: 'completed',
+    },
+];
 
 async function seedTasks() {
     try {
-        await mongoose.connect(MONGO_URL, {
-            useNewUrlParser: true,
-            useUnifiedTopology: true,
-        });
+        await mongoose.connect(process.env.MONGO_URI);
+        console.log('MongoDB connected');
 
-        console.log('Connected to MongoDB');
-
-        // Clear existing tasks
         await Task.deleteMany({});
+        console.log('Existing tasks cleared');
 
-        // Insert mock tasks
-        await Task.insertMany([
-            { text: 'Send email to client' },
-            { text: 'Buy groceries for the week' },
-            { text: 'Schedule dentist appointment' },
-            { text: 'Finish reading chapter 5' },
-            { text: 'Go for a 30-minute walk' },
-            { text: 'Prepare presentation slides' },
-            { text: 'Call mom' },
-            { text: 'Clean the workspace' },
-            { text: 'Pay electricity bill' },
-            { text: 'Organize photo gallery' },
-        ]);
-        console.log('tasks data seeded');
+        await Task.insertMany(sampleTasks);
+        console.log('Tasks seeded successfully');
     } catch (err) {
         console.error('Seeding failed:', err);
-        process.exit(1);
+        process.exitCode = 1;
     } finally {
         await mongoose.disconnect();
     }
